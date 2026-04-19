@@ -1,0 +1,47 @@
+# Base catalog defaults — imported by all environment stacks
+components:
+  terraform:
+    action-group:
+      metadata:
+        component: action-group
+      vars:
+        short_name: "mlops-net"
+        use_common_alert_schema: true # CDv5 / Common Alert Schema
+        tags:
+          managed_by: "atmos"
+          environment: "{{ .stack }}"
+
+    ddos-metric-alert:
+      metadata:
+        component: monitor-alerts
+      vars:
+        alert_type: "metric"
+        metric_namespace: "Microsoft.Network/virtualNetworks"
+        metric_name: "IfUnderDDoSAttack"
+        aggregation: "Maximum"
+        operator: "GreaterThan"
+        threshold: 0
+        severity: 1
+        window_size: "PT5M"
+        frequency: "PT1M"
+        tags:
+          managed_by: "atmos"
+          alert_type: "ddos"
+
+    resource-health-alert:
+      metadata:
+        component: monitor-alerts
+      vars:
+        alert_type: "resource_health"
+        health_current_statuses:
+        - "Degraded"
+        - "Unavailable"
+        health_previous_statuses:
+        - "Available"
+        health_reasons:
+        - "PlatformInitiated"
+        - "UserInitiated"
+        - "Unknown"
+        tags:
+          managed_by: "atmos"
+          alert_type: "resource_health"

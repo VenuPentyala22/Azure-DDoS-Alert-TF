@@ -1,0 +1,50 @@
+import:
+- catalog/monitor-alerts # pulls in all defaults above
+
+vars:
+  tenant: "mlops"
+  environment: "prod"
+  stage: "networking"
+  region: "eastus"
+
+components:
+  terraform:
+
+    action-group:
+      vars:
+        name: "mlops-networking-action-group"
+        resource_group_name: "rg-mlops-networking"
+        alert_email: "platform-team@company.com"
+
+    ddos-metric-alert:
+      vars:
+        name: "ddos-attack"
+        resource_group_name: "rg-mlops-networking"
+        vnet_name: "vnet-mlops-prod"
+        description: "Alert when VNet is under a DDoS attack"
+        # action_group_component injects the ID via remote state
+        action_group_component: "action-group"
+
+      # Remote state — pulls action_group_id from the action-group component
+      remote_state_backend:
+        type: "azurerm"
+      remote_state_backend_config:
+        resource_group_name: "rg-mlops-tfstate"
+        storage_account_name: "samlopstfstate"
+        container_name: "tfstate"
+        key: "mlops-prod-networking/action-group/terraform.tfstate"
+
+    resource-health-alert:
+      vars:
+        name: "mlops-networking-resource-health"
+        resource_group_name: "rg-mlops-networking"
+        subscription_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        action_group_component: "action-group"
+
+      remote_state_backend:
+        type: "azurerm"
+      remote_state_backend_config:
+        resource_group_name: "rg-mlops-tfstate"
+        storage_account_name: "samlopstfstate"
+        container_name: "tfstate"
+        key: "mlops-prod-networking/action-group/terraform.tfstate"
