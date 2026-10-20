@@ -1,0 +1,33 @@
+# Migrated by ADO2GHA from the Azure DevOps build pipeline "AKS-Self-Hosted-Agent-CI" (definition 3).
+# Resolve every review blocker and validate a representative run before enabling triggers.
+name: AKS-Self-Hosted-Agent-CI
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Agent job 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Write inline SQL for Azure SQL InlineSqlTask
+        shell: bash
+        run: |-
+          cat > "$RUNNER_TEMP/ado2gha-inline.sql" <<'ADO2GHA_SQL'
+          CREATE USER [test@sherlabhavana25gmail.onmicrosoft.com] FROM EXTERNAL PROVIDER
+
+
+
+          ALTER ROLE db_datareader ADD MEMBER [test@sherlabhavana25gmail.onmicrosoft.com];
+          ALTER ROLE db_datawriter ADD MEMBER [test@sherlabhavana25gmail.onmicrosoft.com];
+          ALTER ROLE db_datareader ADD MEMBER [test@sherlabhavana25gmail.onmicrosoft.com];
+          ADO2GHA_SQL
+      - name: Azure SQL InlineSqlTask
+        uses: azure/sql-action@eb1f9a80487ca52b90f41a473f53da4943526994 # v2.4
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: ${{ runner.temp }}/ado2gha-inline.sql
